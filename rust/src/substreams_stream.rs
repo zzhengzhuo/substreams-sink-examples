@@ -83,7 +83,6 @@ fn stream_blocks(
                 // module.
                 production_mode: true,
                 debug_initial_store_snapshot_for_modules: vec![],
-                noop_mode: false,
             }).await;
 
             match result {
@@ -168,10 +167,6 @@ async fn process_substreams_response(
 
     match response.message {
         Some(Message::Session(session)) => {
-            println!(
-                "Received session message (Workers {}, Trace ID {})",
-                session.max_parallel_workers, &session.trace_id
-            );
             BlockProcessedResult::Skip()
         }
         Some(Message::BlockScopedData(block_scoped_data)) => {
@@ -182,15 +177,6 @@ async fn process_substreams_response(
         }
         Some(Message::Progress(progress)) => {
             if last_progress_report.elapsed() > Duration::from_secs(30) {
-                let processed_bytes = progress.processed_bytes.unwrap_or_default();
-
-                println!(
-                    "Latest progress message received (Stages: {}, Jobs: {}, Processed Bytes: [Read: {}, Written: {}])",
-                    progress.stages.len(),
-                    progress.running_jobs.len(),
-                    processed_bytes.total_bytes_read,
-                    processed_bytes.total_bytes_written,
-                );
                 *last_progress_report = Instant::now();
             }
 
